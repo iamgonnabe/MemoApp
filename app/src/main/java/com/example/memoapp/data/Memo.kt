@@ -12,7 +12,7 @@ data class Memo(
     @ColumnInfo(name="memo-title")
     val memo: String="",
     @ColumnInfo(name = "memo-time")
-    val time: Date = Date(),
+    val time: String="",
     @ColumnInfo(name = "folder")
     val folderId: Long = 0L
 )
