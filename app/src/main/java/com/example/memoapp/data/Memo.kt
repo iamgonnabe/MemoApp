@@ -22,6 +22,8 @@ data class Folder(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
     @ColumnInfo(name = "folder-title")
-    val title: String = ""
+    val title: String = "",
+    @ColumnInfo(name = "memo-count")
+    val memoCount: Int = 0
 )
 

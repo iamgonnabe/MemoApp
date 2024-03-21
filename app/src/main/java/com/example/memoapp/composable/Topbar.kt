@@ -24,42 +24,34 @@ import com.example.memoapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(title: MutableState<String>, onBackNavClicked: () -> Unit = {}, isNew : Boolean){
+fun TopBar(title: String, onBackNavClicked: () -> Unit = {}, isNew : Boolean){
 
     val navigationIcon : @Composable () -> Unit =
-        if(!title.value.contains("폴더")){
+        if(!title.contains("폴더")){
             {
                 IconButton(onClick = { onBackNavClicked() }) {
                     Icon(painterResource(id = R.drawable.baseline_arrow_back_ios_24), contentDescription = null)
                 }
             }
         }else {
-            if(title.value.contains("새로운 폴더") && isNew){
-                {
-                    TextButton(onClick = {onBackNavClicked()}) {
-                        Text(text = "취소", fontSize = 18.sp, color = colorResource(id = R.color.contentColor))
-                    }
-                }
-            }else{
-                {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            tint = Color.Transparent,
-                            contentDescription = null
-                        )
-                    }
+            {
+                IconButton(onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        tint = Color.Transparent,
+                        contentDescription = null
+                    )
                 }
             }
         }
     val actionTextButton : @Composable RowScope.() -> Unit =
-        if(title.value.contains("폴더")){
+        if(title.contains("폴더")){
             {
                 TextButton(onClick = { /* 새로 생성한 폴더 메뉴 버튼 생김 그리고 텍스트가 완료로 바뀜 */ }) {
-                Text(text = "편집", fontSize = 18.sp, color = colorResource(id = R.color.contentColor))
+                Text(text = "편집", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
                 }
             }
-        }else if(title.value.contains("메모")) {
+        }else if(title.contains("메모")) {
             {
                 IconButton(onClick = { /* edit folder drawer */ }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
@@ -80,12 +72,12 @@ fun TopBar(title: MutableState<String>, onBackNavClicked: () -> Unit = {}, isNew
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Black,
             titleContentColor = Color.White,
-            navigationIconContentColor = colorResource(id = R.color.contentColor),
-            actionIconContentColor = colorResource(id = R.color.contentColor)
+            navigationIconContentColor = colorResource(id = R.color.iconTextColor),
+            actionIconContentColor = colorResource(id = R.color.iconTextColor)
         ),
         title = {
             Text(
-                title.value,
+                title,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
