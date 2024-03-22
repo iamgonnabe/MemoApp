@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MemoApp</string>
+    <string name="edit">편집</string>
+    <string name="complete">완료</string>
 </resources>

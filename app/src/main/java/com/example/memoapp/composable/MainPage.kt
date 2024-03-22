@@ -1,11 +1,10 @@
 package com.example.memoapp.composable
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,26 +18,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedTextField
@@ -56,6 +54,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -84,6 +85,9 @@ fun MainPage(navController: NavController){
     val scope: CoroutineScope = rememberCoroutineScope()
     val memoViewModel: MemoViewModel = viewModel()
     val isSheetFullScreen by remember{ mutableStateOf(false) }
+    val isFolder by remember {
+        mutableStateOf(false)
+    }
 
     val modalSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -101,7 +105,7 @@ fun MainPage(navController: NavController){
                 Row (
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ){
                     IconButton(onClick = {
@@ -115,14 +119,12 @@ fun MainPage(navController: NavController){
                     }) {
                         Icon(painterResource(id = R.drawable.outline_create_new_folder_24),
                             contentDescription = null,
-                            modifier = Modifier.size(32.dp),
                             tint = colorResource(id = R.color.iconTextColor)
                         )
                     }
-                    IconButton(onClick = {navController.navigate(Screen.MainScreen.MemoScreen.route)}) {
+                    IconButton(onClick = {navController.navigate(Screen.NewMemoScreen.route + "/0L")}) {
                         Icon(painterResource(id = R.drawable.outline_new_window_24),
                             contentDescription = null,
-                            modifier = Modifier.size(32.dp),
                             tint = colorResource(id = R.color.iconTextColor)
                         )
                     }
@@ -139,7 +141,7 @@ fun MainPage(navController: NavController){
         Scaffold(
             scaffoldState = scaffoldState,
             backgroundColor = Color.Black,
-            topBar = {TopBar(title = "폴더", isNew = false)},
+            topBar = {TopBar(title = "폴더", isFolder = isFolder, folderId = 0L, viewModel = memoViewModel)},
             bottomBar = bottomBar
         ) {
             val folderList = memoViewModel.getAllFolders.collectAsState(initial = listOf())
@@ -157,8 +159,12 @@ fun MainPage(navController: NavController){
                 )
                 LazyColumn {
                     items(folderList.value, key = { folder -> folder.id }) { folder ->
-                        FolderItem(folder = folder) {
-                            navController.navigate(Screen.MainScreen.FolderScreen.route + "/${folder.id}")
+                        FolderItem(folder = folder, viewModel = memoViewModel) {
+                            if(memoViewModel.editFolderState){
+                                //disabled
+                            }else{
+                                navController.navigate(Screen.FolderScreen.route + "/${folder.id}")
+                            }
                         }
                     }
                 }
@@ -195,7 +201,10 @@ fun NewFolderTextField(
     modalSheetState: ModalBottomSheetState,
     dialogOpen: MutableState<Boolean>
 ){
+    val view = LocalView.current
+    val context = LocalContext.current
     val scope: CoroutineScope = rememberCoroutineScope()
+    val softwareKeyboardController = LocalSoftwareKeyboardController.current
     Column {
         Row (
             modifier = Modifier
@@ -218,6 +227,9 @@ fun NewFolderTextField(
                             title = viewModel.folderState
                         )
                     )
+                    viewModel.folderState = ""
+                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(view.windowToken, 0)
                     scope.launch{
                         modalSheetState.hide()
                     }
@@ -238,6 +250,10 @@ fun NewFolderTextField(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            keyboardActions = KeyboardActions(onDone = {
+                softwareKeyboardController?.hide()
+            }),
+
             colors = OutlinedTextFieldDefaults.colors(focusedContainerColor = colorResource(id = R.color.cardColor),
                 focusedTextColor = Color.White, unfocusedContainerColor = colorResource(id = R.color.cardColor), cursorColor = colorResource(
                     id = R.color.iconTextColor), focusedBorderColor = colorResource(id = R.color.cardColor))
@@ -246,7 +262,7 @@ fun NewFolderTextField(
 }
 
 @Composable
-fun FolderItem(folder: Folder, onClick: () -> Unit){
+fun FolderItem(folder: Folder, viewModel:MemoViewModel, onClick: () -> Unit){
     ElevatedCard(modifier = Modifier
         .fillMaxWidth()
         .height(48.dp)
@@ -257,18 +273,30 @@ fun FolderItem(folder: Folder, onClick: () -> Unit){
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.cardColor))) {
         Row (modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween){
+            .padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween){
             Row (verticalAlignment = Alignment.CenterVertically){
                 Icon(painterResource(id = R.drawable.outline_folder_open_24),
                     tint = colorResource(id = R.color.iconTextColor),
                     modifier = Modifier.size(26.dp),
                     contentDescription = null)
                 Box(modifier = Modifier.size(10.dp))
-                Text(text = folder.title, fontSize = 26.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                Text(text = folder.title, fontSize = 22.sp, color = Color.White, fontWeight = FontWeight.Medium)
             }
-            Row (verticalAlignment = Alignment.CenterVertically){
-                Text(text = folder.memoCount.toString(), fontSize = 26.sp, color = Color.Gray)
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(26.dp))
+            if(viewModel.editFolderState /* && !folder.title.contains("메모")*/){
+                IconButton(onClick = {
+                    viewModel.deleteFolder(folder)
+                }) {
+                    Icon(
+                        painterResource(id = R.drawable.baseline_menu_24),
+                        contentDescription = null
+                    )
+                }
+            }else{
+                Row (verticalAlignment = Alignment.CenterVertically){
+                    Text(text = folder.memoCount.toString(), fontSize = 22.sp, color = Color.Gray)
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(26.dp))
+
+                }
             }
         }
     }

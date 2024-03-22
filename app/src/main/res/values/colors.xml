@@ -8,6 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="iconTextColor">#FFD52E</color>
-    <color name="cardColor">#5F5C5C</color>
+    <color name="cardColor">#3C3B3B</color>
     <color name="bgColor">#1E1E1E</color>
 </resources>

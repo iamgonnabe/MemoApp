@@ -19,6 +19,7 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     var memoTimeState by mutableStateOf(Date())
     var folderState by mutableStateOf("")
     var memosInFolder by mutableIntStateOf(0)
+    var editFolderState by mutableStateOf(false)
 
     fun onMemoChanged(newString: String){
         memoState = newString
@@ -41,6 +42,7 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     fun addMemo(memo: String, folderId : Long){
         viewModelScope.launch(Dispatchers.IO) {
             repository.addMemo(memo= Memo(folderId = folderId, memo = memo))
+            repository.updateFolder(folder = Folder(id = folderId, memoCount = memosInFolder++))
         }
     }
 
@@ -53,15 +55,18 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
             repository.updateMemo(memo=memo)
         }
     }
-    fun deleteMemo(memo: Memo){
+    fun deleteMemo(memo: Memo, folderId : Long){
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteMemo(memo=memo)
+            repository.updateFolder(folder = Folder(id = folderId, memoCount = memosInFolder--))
         }
     }
 
-    fun deleteAllMemo(){
+    fun deleteAllMemo(folderId: Long){
+        memosInFolder = 0
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteAll()
+            repository.updateFolder(folder = Folder(id = folderId, memoCount = memosInFolder))
         }
     }
 

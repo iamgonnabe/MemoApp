@@ -16,15 +16,18 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
+import com.example.memoapp.data.Memo
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(title: String, onBackNavClicked: () -> Unit = {}, isNew : Boolean){
+fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoViewModel, onBackNavClicked: () -> Unit = {},){
 
     val navigationIcon : @Composable () -> Unit =
         if(!title.contains("폴더")){
@@ -47,11 +50,13 @@ fun TopBar(title: String, onBackNavClicked: () -> Unit = {}, isNew : Boolean){
     val actionTextButton : @Composable RowScope.() -> Unit =
         if(title.contains("폴더")){
             {
-                TextButton(onClick = { /* 새로 생성한 폴더 메뉴 버튼 생김 그리고 텍스트가 완료로 바뀜 */ }) {
-                Text(text = "편집", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
+                TextButton(onClick = { viewModel.editFolderState = !viewModel.editFolderState}) {
+                Text(text = if(viewModel.editFolderState) stringResource(id = R.string.complete) else stringResource(
+                    id = R.string.edit
+                ), fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
                 }
             }
-        }else if(title.contains("메모")) {
+        }else if(isFolder) {
             {
                 IconButton(onClick = { /* edit folder drawer */ }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
@@ -59,11 +64,19 @@ fun TopBar(title: String, onBackNavClicked: () -> Unit = {}, isNew : Boolean){
             }
         }else{
             {
-                IconButton(onClick = { /* share */ }) {
+                IconButton(onClick = { /* share */ }, enabled = viewModel.memoState.isNotEmpty()) {
                     Icon(painterResource(id = R.drawable.baseline_ios_share_24), contentDescription = null)
                 }
                 IconButton(onClick = { /* edit memo drawer*/ }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
+                }
+                if(viewModel.memoState.isNotEmpty()){
+                    TextButton(onClick = {
+                        viewModel.addMemo(memo = viewModel.memoState, folderId = folderId)
+                        onBackNavClicked()
+                    }) {
+                        Text(text = "완료", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
+                    }
                 }
 
             }
