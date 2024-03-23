@@ -24,6 +24,6 @@ data class Folder(
     @ColumnInfo(name = "folder-title")
     val title: String = "",
     @ColumnInfo(name = "memo-count")
-    val memoCount: Int = 0
+    var memoCount: Int = 0
 )
 

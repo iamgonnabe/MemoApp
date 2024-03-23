@@ -30,19 +30,15 @@ import com.example.memoapp.data.Folder
 import com.example.memoapp.navigation.Screen
 
 @Composable
-fun FolderPage(id: Long, viewModel: MemoViewModel, navController: NavController){
+fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavController){
     val isFolder by remember {
         mutableStateOf(true)
     }
 
     val scaffoldState = rememberScaffoldState()
-
-    if (id != 0L){
-        val folder = viewModel.getFolderById(id).collectAsState(initial = Folder(0L, "", 0))
-        viewModel.folderState = folder.value.title
-    }else{
-        viewModel.folderState = "메모"
-    }
+    val folder = viewModel.getFolderById(folderId).collectAsState(initial = Folder(0L,"",0))
+    viewModel.folderState = folder.value.title
+    viewModel.memosInFolder = folder.value.memoCount
 
     val bottomBar: @Composable ()-> Unit = {
         BottomAppBar(
@@ -62,7 +58,7 @@ fun FolderPage(id: Long, viewModel: MemoViewModel, navController: NavController)
                         color = Color.White,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 48.dp, top = 16.dp))
-                    IconButton(onClick = {navController.navigate(Screen.NewMemoScreen.route + "/${id}")}) {
+                    IconButton(onClick = {navController.navigate(Screen.NewMemoScreen.route + "/${folderId}")}) {
                         Icon(
                             painterResource(id = R.drawable.outline_new_window_24),
                             contentDescription = null,
@@ -75,7 +71,7 @@ fun FolderPage(id: Long, viewModel: MemoViewModel, navController: NavController)
     }
     
     Scaffold (
-        topBar = {TopBar(title = viewModel.folderState, isFolder = isFolder, folderId = id, viewModel = viewModel ){navController.navigateUp()} },
+        topBar = {TopBar(title = viewModel.folderState, isFolder = isFolder, folderId = folderId, viewModel = viewModel ){navController.navigateUp()} },
         bottomBar = bottomBar,
         backgroundColor = Color.Black,
         scaffoldState = scaffoldState

@@ -12,6 +12,7 @@ import com.example.memoapp.MemoViewModel
 import com.example.memoapp.composable.FolderPage
 import com.example.memoapp.composable.MainPage
 import com.example.memoapp.composable.NewMemoPage
+import com.example.memoapp.data.Folder
 
 @Composable
 fun Navigation(viewModel: MemoViewModel = viewModel(), navController: NavController){
@@ -30,7 +31,7 @@ fun Navigation(viewModel: MemoViewModel = viewModel(), navController: NavControl
         ){
                 entry->
             val id = entry.arguments?.getLong("id") ?: 0L
-            FolderPage(id= id, viewModel = viewModel, navController = navController)
+            FolderPage(folderId = id, viewModel = viewModel, navController = navController)
         }
 
         composable(

@@ -13,6 +13,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -22,12 +23,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
+import com.example.memoapp.data.Folder
 import com.example.memoapp.data.Memo
+import kotlinx.coroutines.flow.FlowCollector
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoViewModel, onBackNavClicked: () -> Unit = {},){
+fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoViewModel, onBackNavClicked: () -> Unit = {}){
 
     val navigationIcon : @Composable () -> Unit =
         if(!title.contains("폴더")){
@@ -73,6 +76,7 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
                 if(viewModel.memoState.isNotEmpty()){
                     TextButton(onClick = {
                         viewModel.addMemo(memo = viewModel.memoState, folderId = folderId)
+                        viewModel.incrementMemoCount(folderId = folderId)
                         onBackNavClicked()
                     }) {
                         Text(text = "완료", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))

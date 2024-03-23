@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
+import com.example.memoapp.data.Folder
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnusedMaterialScaffoldPaddingParameter")
@@ -37,7 +38,7 @@ fun NewMemoPage(folderId: Long, viewModel: MemoViewModel, navController: NavCont
 
     Scaffold(
         topBar = {
-            TopBar(title = "", isFolder = isFolder, folderId= folderId, viewModel = viewModel){
+            TopBar(title = "", isFolder = isFolder, folderId = folderId, viewModel = viewModel){
                 navController.navigateUp()
             }
         }, scaffoldState = scaffoldState

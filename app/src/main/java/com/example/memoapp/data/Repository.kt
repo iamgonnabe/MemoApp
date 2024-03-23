@@ -1,6 +1,7 @@
 package com.example.memoapp.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 
 class Repository(private val memoDao: MemoDao, private val folderDao: FolderDao) {
     suspend fun addMemo(memo: Memo){
@@ -36,5 +37,21 @@ class Repository(private val memoDao: MemoDao, private val folderDao: FolderDao)
 
     suspend fun deleteFolder(folder: Folder){
         folderDao.deleteFolder(folder)
+    }
+
+    suspend fun incrementMemoCount(folderId: Long) {
+        val folder = folderDao.getFolderById(folderId).firstOrNull()
+        folder?.let {
+            it.memoCount++
+            folderDao.updateFolder(it)
+        }
+    }
+
+    suspend fun decrementMemoCount(folderId: Long) {
+        val folder = folderDao.getFolderById(folderId).firstOrNull()
+        folder?.let {
+            it.memoCount--
+            folderDao.updateFolder(it)
+        }
     }
 }

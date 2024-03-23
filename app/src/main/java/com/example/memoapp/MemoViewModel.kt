@@ -20,6 +20,7 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     var folderState by mutableStateOf("")
     var memosInFolder by mutableIntStateOf(0)
     var editFolderState by mutableStateOf(false)
+    var isMemoEditing by mutableStateOf(true)
 
     fun onMemoChanged(newString: String){
         memoState = newString
@@ -42,7 +43,6 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     fun addMemo(memo: String, folderId : Long){
         viewModelScope.launch(Dispatchers.IO) {
             repository.addMemo(memo= Memo(folderId = folderId, memo = memo))
-            repository.updateFolder(folder = Folder(id = folderId, memoCount = memosInFolder++))
         }
     }
 
@@ -55,18 +55,15 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
             repository.updateMemo(memo=memo)
         }
     }
-    fun deleteMemo(memo: Memo, folderId : Long){
+    fun deleteMemo(memo: Memo){
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteMemo(memo=memo)
-            repository.updateFolder(folder = Folder(id = folderId, memoCount = memosInFolder--))
         }
     }
 
-    fun deleteAllMemo(folderId: Long){
-        memosInFolder = 0
+    fun deleteAllMemo(){
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteAll()
-            repository.updateFolder(folder = Folder(id = folderId, memoCount = memosInFolder))
         }
     }
 
@@ -85,6 +82,20 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
             repository.updateFolder(folder=folder)
         }
     }
+
+    fun incrementMemoCount(folderId: Long) {
+        viewModelScope.launch {
+            repository.incrementMemoCount(folderId)
+        }
+    }
+
+    fun decrementMemoCount(folderId: Long) {
+        viewModelScope.launch {
+            repository.decrementMemoCount(folderId)
+        }
+    }
+
+
 
     fun deleteFolder(folder: Folder){
         viewModelScope.launch(Dispatchers.IO) {
