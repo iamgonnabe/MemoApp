@@ -11,6 +11,8 @@ class Repository(private val memoDao: MemoDao, private val folderDao: FolderDao)
 
     fun getMemoById(id:Long): Flow<Memo> = memoDao.getMemoById(id)
 
+    fun getMemosByFolderId(folderId: Long): Flow<List<Memo>> = memoDao.getAllMemosByFolderId(folderId)
+
     suspend fun updateMemo(memo: Memo){
         memoDao.updateMemo(memo)
     }

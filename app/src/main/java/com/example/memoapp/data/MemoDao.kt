@@ -17,6 +17,9 @@ abstract class MemoDao {
     @Query("Select * from `memo-table`")
     abstract fun getAllMemos(): Flow<List<Memo>>
 
+    @Query("Select * from `memo-table` where folder=:id")
+    abstract fun getAllMemosByFolderId(id: Long): Flow<List<Memo>>
+
     @Update
     abstract suspend fun updateMemo(memoEntity: Memo)
 

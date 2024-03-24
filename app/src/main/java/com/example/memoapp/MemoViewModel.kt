@@ -12,7 +12,9 @@ import com.example.memoapp.data.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class MemoViewModel(private val repository: Repository = Graph.repository): ViewModel() {
     var memoState by mutableStateOf("")
@@ -20,7 +22,7 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     var folderState by mutableStateOf("")
     var memosInFolder by mutableIntStateOf(0)
     var editFolderState by mutableStateOf(false)
-    var isMemoEditing by mutableStateOf(true)
+    var memoEditingState by mutableStateOf(false)
 
     fun onMemoChanged(newString: String){
         memoState = newString
@@ -41,13 +43,20 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     }
 
     fun addMemo(memo: String, folderId : Long){
+        val currentDate = Date()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val dateString = dateFormat.format(currentDate)
         viewModelScope.launch(Dispatchers.IO) {
-            repository.addMemo(memo= Memo(folderId = folderId, memo = memo))
+            repository.addMemo(memo= Memo(folderId = folderId, memo = memo, time = dateString))
         }
     }
 
     fun getMemoById(id:Long): Flow<Memo> {
         return repository.getMemoById(id)
+    }
+
+    fun getAllMemosByFolderId(folderId: Long): Flow<List<Memo>> {
+        return repository.getMemosByFolderId(folderId)
     }
 
     fun updateMemo(memo: Memo){
@@ -94,8 +103,6 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
             repository.decrementMemoCount(folderId)
         }
     }
-
-
 
     fun deleteFolder(folder: Folder){
         viewModelScope.launch(Dispatchers.IO) {

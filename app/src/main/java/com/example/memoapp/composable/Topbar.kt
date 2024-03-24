@@ -1,5 +1,7 @@
 package com.example.memoapp.composable
 
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -14,7 +16,11 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,6 +31,7 @@ import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
 import com.example.memoapp.data.Folder
 import com.example.memoapp.data.Memo
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.FlowCollector
 
 
@@ -32,10 +39,17 @@ import kotlinx.coroutines.flow.FlowCollector
 @Composable
 fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoViewModel, onBackNavClicked: () -> Unit = {}){
 
+    val view = LocalView.current
+    val context = LocalContext.current
+    val softwareKeyboardController = LocalSoftwareKeyboardController.current
+    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
     val navigationIcon : @Composable () -> Unit =
         if(!title.contains("폴더")){
             {
-                IconButton(onClick = { onBackNavClicked() }) {
+                IconButton(onClick = {
+                    onBackNavClicked()
+                }) {
                     Icon(painterResource(id = R.drawable.baseline_arrow_back_ios_24), contentDescription = null)
                 }
             }
@@ -73,11 +87,12 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
                 IconButton(onClick = { /* edit memo drawer*/ }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
                 }
-                if(viewModel.memoState.isNotEmpty()){
+                if(viewModel.memoState.isNotEmpty() && viewModel.memoEditingState){
                     TextButton(onClick = {
                         viewModel.addMemo(memo = viewModel.memoState, folderId = folderId)
                         viewModel.incrementMemoCount(folderId = folderId)
-                        onBackNavClicked()
+                        viewModel.memoEditingState = false
+                        imm.hideSoftInputFromWindow(view.windowToken, 0)
                     }) {
                         Text(text = "완료", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
                     }

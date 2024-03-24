@@ -11,8 +11,7 @@ import androidx.navigation.NavController
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.composable.FolderPage
 import com.example.memoapp.composable.MainPage
-import com.example.memoapp.composable.NewMemoPage
-import com.example.memoapp.data.Folder
+import com.example.memoapp.composable.MemoPage
 
 @Composable
 fun Navigation(viewModel: MemoViewModel = viewModel(), navController: NavController){
@@ -35,17 +34,24 @@ fun Navigation(viewModel: MemoViewModel = viewModel(), navController: NavControl
         }
 
         composable(
-            Screen.NewMemoScreen.route + "/{id}",
+            Screen.MemoScreen.route + "/{folderId}/{memoId}",
             arguments = listOf(
-                navArgument("id"){
+                navArgument("folderId"){
                     type = NavType.LongType
                     defaultValue = 0L
                     nullable = false
-                })
+                },
+                navArgument("memoId"){
+                    type = NavType.LongType
+                    defaultValue = 0L
+                    nullable = false
+                }
+            )
         ){
                 entry->
-            val id = entry.arguments?.getLong("id") ?: 0L
-            NewMemoPage(folderId = id, viewModel = viewModel, navController = navController)
+            val folderId = entry.arguments?.getLong("folderId") ?: 0L
+            val memoId = entry.arguments?.getLong("memoId") ?: 0L
+            MemoPage(folderId = folderId, memoId = memoId, viewModel = viewModel, navController = navController)
         }
 
 

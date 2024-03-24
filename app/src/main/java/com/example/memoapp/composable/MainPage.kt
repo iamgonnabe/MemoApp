@@ -122,7 +122,7 @@ fun MainPage(navController: NavController){
                             tint = colorResource(id = R.color.iconTextColor)
                         )
                     }
-                    IconButton(onClick = {navController.navigate(Screen.NewMemoScreen.route + "/0L")}) {
+                    IconButton(onClick = {navController.navigate(Screen.MemoScreen.route + "/0L/0L")}) {
                         Icon(painterResource(id = R.drawable.outline_new_window_24),
                             contentDescription = null,
                             tint = colorResource(id = R.color.iconTextColor)
@@ -160,9 +160,7 @@ fun MainPage(navController: NavController){
                 LazyColumn {
                     items(folderList.value, key = { folder -> folder.id }) { folder ->
                         FolderItem(folder = folder, viewModel = memoViewModel) {
-                            if(memoViewModel.editFolderState){
-                                //disabled
-                            }else{
+                            if(!memoViewModel.editFolderState){
                                 navController.navigate(Screen.FolderScreen.route + "/${folder.id}")
                             }
                         }
@@ -205,6 +203,7 @@ fun NewFolderTextField(
     val context = LocalContext.current
     val scope: CoroutineScope = rememberCoroutineScope()
     val softwareKeyboardController = LocalSoftwareKeyboardController.current
+    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     Column {
         Row (
             modifier = Modifier
@@ -228,7 +227,6 @@ fun NewFolderTextField(
                         )
                     )
                     viewModel.folderState = ""
-                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(view.windowToken, 0)
                     scope.launch{
                         modalSheetState.hide()
