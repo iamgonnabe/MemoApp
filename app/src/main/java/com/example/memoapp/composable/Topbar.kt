@@ -2,10 +2,23 @@ package com.example.memoapp.composable
 
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,7 +29,11 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -26,7 +43,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
 import com.example.memoapp.data.Folder
@@ -43,6 +63,9 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
     val context = LocalContext.current
     val softwareKeyboardController = LocalSoftwareKeyboardController.current
     val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val dialogOpen = remember {
+        mutableStateOf(false)
+    }
 
     val navigationIcon : @Composable () -> Unit =
         if(!title.contains("폴더")){
@@ -75,7 +98,9 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
             }
         }else if(isFolder) {
             {
-                IconButton(onClick = { /* edit folder drawer */ }) {
+                IconButton(onClick = {
+                    dialogOpen.value = true
+                }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
                 }
             }
@@ -87,11 +112,11 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
                 IconButton(onClick = { /* edit memo drawer*/ }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
                 }
-                if(viewModel.memoState.isNotEmpty() && viewModel.memoEditingState){
+                if(viewModel.memoState.isNotEmpty() && viewModel.memoCreatingState){
                     TextButton(onClick = {
                         viewModel.addMemo(memo = viewModel.memoState, folderId = folderId)
                         viewModel.incrementMemoCount(folderId = folderId)
-                        viewModel.memoEditingState = false
+                        viewModel.memoCreatingState = false
                         imm.hideSoftInputFromWindow(view.windowToken, 0)
                     }) {
                         Text(text = "완료", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
@@ -119,4 +144,43 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
         navigationIcon = navigationIcon,
         actions = actionTextButton,
     )
+    MenuPopUp(dialogOpen, viewModel)
+}
+
+@Composable
+fun MenuPopUp(dialogOpen: MutableState<Boolean>, viewModel: MemoViewModel){
+    if(dialogOpen.value){
+        Dialog(onDismissRequest = { dialogOpen.value = false },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Card(
+                modifier = Modifier
+                    .height(80.dp)
+                    .width(200.dp)
+                    .padding(8.dp)
+                    .clickable {
+                        dialogOpen.value = false
+                         viewModel.memoEditingState = true
+                    },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = colorResource(id = R.color.cardColor)
+                )
+            ) {
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Text(text = "메모 선택", color = Color.White)
+                    Icon(painter = painterResource(id = R.drawable.baseline_check_circle_outline_24), tint = Color.White, contentDescription = null)
+                }
+            }
+        }
+    }
 }

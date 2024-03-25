@@ -2,6 +2,7 @@ package com.example.memoapp.composable
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -79,15 +80,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun MainPage(navController: NavController){
+fun MainPage(navController: NavController, viewModel: MemoViewModel){
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val scope: CoroutineScope = rememberCoroutineScope()
-    val memoViewModel: MemoViewModel = viewModel()
     val isSheetFullScreen by remember{ mutableStateOf(false) }
-    val isFolder by remember {
-        mutableStateOf(false)
-    }
 
     val modalSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -122,7 +119,10 @@ fun MainPage(navController: NavController){
                             tint = colorResource(id = R.color.iconTextColor)
                         )
                     }
-                    IconButton(onClick = {navController.navigate(Screen.MemoScreen.route + "/0L/0L")}) {
+                    IconButton(onClick = {
+                        viewModel.memoCreatingState = true
+                        navController.navigate(Screen.MemoScreen.route + "/1L/0L")
+                    }) {
                         Icon(painterResource(id = R.drawable.outline_new_window_24),
                             contentDescription = null,
                             tint = colorResource(id = R.color.iconTextColor)
@@ -136,15 +136,15 @@ fun MainPage(navController: NavController){
         sheetState = modalSheetState,
         sheetShape = RoundedCornerShape(topStart = roundedCornerRadius, topEnd = roundedCornerRadius),
         sheetContent = {
-        MoreBottomSheet(viewModel = memoViewModel, modalSheetState = modalSheetState)
+        MoreBottomSheet(viewModel = viewModel, modalSheetState = modalSheetState)
     }) {
         Scaffold(
             scaffoldState = scaffoldState,
             backgroundColor = Color.Black,
-            topBar = {TopBar(title = "폴더", isFolder = isFolder, folderId = 0L, viewModel = memoViewModel)},
+            topBar = {TopBar(title = "폴더", isFolder = false, folderId = 0L, viewModel = viewModel)},
             bottomBar = bottomBar
         ) {
-            val folderList = memoViewModel.getAllFolders.collectAsState(initial = listOf())
+            val folderList = viewModel.getAllFolders.collectAsState(initial = listOf())
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -159,8 +159,8 @@ fun MainPage(navController: NavController){
                 )
                 LazyColumn {
                     items(folderList.value, key = { folder -> folder.id }) { folder ->
-                        FolderItem(folder = folder, viewModel = memoViewModel) {
-                            if(!memoViewModel.editFolderState){
+                        FolderItem(folder = folder, viewModel = viewModel) {
+                            if(!viewModel.editFolderState){
                                 navController.navigate(Screen.FolderScreen.route + "/${folder.id}")
                             }
                         }
@@ -215,6 +215,8 @@ fun NewFolderTextField(
                 scope.launch {
                     modalSheetState.hide()
                 }
+                imm.hideSoftInputFromWindow(view.windowToken, 0)
+                viewModel.folderState = ""
             }) {
                 Text(text = "취소", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
             }
@@ -251,7 +253,9 @@ fun NewFolderTextField(
             keyboardActions = KeyboardActions(onDone = {
                 softwareKeyboardController?.hide()
             }),
-
+            trailingIcon = {IconButton(onClick = { viewModel.folderState = "" }) {
+                Icon(painter = painterResource(id = R.drawable.baseline_clear_24), contentDescription = null)
+            }},
             colors = OutlinedTextFieldDefaults.colors(focusedContainerColor = colorResource(id = R.color.cardColor),
                 focusedTextColor = Color.White, unfocusedContainerColor = colorResource(id = R.color.cardColor), cursorColor = colorResource(
                     id = R.color.iconTextColor), focusedBorderColor = colorResource(id = R.color.cardColor))
@@ -267,6 +271,7 @@ fun FolderItem(folder: Folder, viewModel:MemoViewModel, onClick: () -> Unit){
         .padding(horizontal = 4.dp)
         .clickable {
             onClick()
+            Log.d("folderId", "${folder.id}")
         }, elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.cardColor))) {
         Row (modifier = Modifier

@@ -8,7 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="iconTextColor">#FFD52E</color>
-    <color name="cardColor">#3C3B3B</color>
+    <color name="cardColor">#252525</color>
     <color name="bgColor">#1E1E1E</color>
     <color name="memoTextColor">#70999999</color>
 </resources>

@@ -17,7 +17,7 @@ import com.example.memoapp.composable.MemoPage
 fun Navigation(viewModel: MemoViewModel = viewModel(), navController: NavController){
     NavHost(navController = navController as NavHostController, startDestination = Screen.HomeScreen.route){
         composable(Screen.HomeScreen.route){
-            MainPage(navController = navController)
+            MainPage(navController = navController, viewModel = viewModel)
         }
         composable(
             Screen.FolderScreen.route + "/{id}",

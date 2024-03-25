@@ -1,5 +1,6 @@
 package com.example.memoapp
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +23,7 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     var folderState by mutableStateOf("")
     var memosInFolder by mutableIntStateOf(0)
     var editFolderState by mutableStateOf(false)
+    var memoCreatingState by mutableStateOf(false)
     var memoEditingState by mutableStateOf(false)
 
     fun onMemoChanged(newString: String){
@@ -44,11 +46,12 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
 
     fun addMemo(memo: String, folderId : Long){
         val currentDate = Date()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("yyyy.MM.dd. HH:mm", Locale.KOREAN)
         val dateString = dateFormat.format(currentDate)
         viewModelScope.launch(Dispatchers.IO) {
             repository.addMemo(memo= Memo(folderId = folderId, memo = memo, time = dateString))
         }
+        Log.d("folderId","$folderId")
     }
 
     fun getMemoById(id:Long): Flow<Memo> {

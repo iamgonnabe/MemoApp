@@ -44,8 +44,6 @@ fun MemoPage(folderId: Long, memoId: Long, viewModel: MemoViewModel, navControll
             onValueChange = {viewModel.onMemoChanged(it)},
             modifier = Modifier
                 .fillMaxSize(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { /* Handle 'Done' action */ }),
             maxLines = Int.MAX_VALUE,
             singleLine = false,
             colors = TextFieldDefaults.colors(
