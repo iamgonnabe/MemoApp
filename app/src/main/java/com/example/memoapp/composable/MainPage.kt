@@ -67,7 +67,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
@@ -113,6 +112,7 @@ fun MainPage(navController: NavController, viewModel: MemoViewModel){
                                 modalSheetState.show()
                             }
                         }
+                        viewModel.editFolderState = false
                     }) {
                         Icon(painterResource(id = R.drawable.outline_create_new_folder_24),
                             contentDescription = null,
@@ -122,6 +122,7 @@ fun MainPage(navController: NavController, viewModel: MemoViewModel){
                     IconButton(onClick = {
                         viewModel.memoCreatingState = true
                         navController.navigate(Screen.MemoScreen.route + "/1L/0L")
+                        viewModel.editFolderState = false
                     }) {
                         Icon(painterResource(id = R.drawable.outline_new_window_24),
                             contentDescription = null,

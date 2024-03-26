@@ -23,14 +23,11 @@ abstract class MemoDao {
     @Update
     abstract suspend fun updateMemo(memoEntity: Memo)
 
-    @Delete
-    abstract suspend fun deleteMemo(memoEntity: Memo)
-
     @Query("Select * from `memo-table` where id=:id")
     abstract fun getMemoById(id: Long): Flow<Memo>
 
-    @Query("Delete from `memo-table`")
-    abstract fun deleteAll()
+    @Delete
+    abstract fun deleteMemos(memoEntities: List<Memo>)
 
 }
 

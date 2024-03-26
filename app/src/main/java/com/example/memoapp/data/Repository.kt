@@ -17,12 +17,8 @@ class Repository(private val memoDao: MemoDao, private val folderDao: FolderDao)
         memoDao.updateMemo(memo)
     }
 
-    suspend fun deleteMemo(memo: Memo){
-        memoDao.deleteMemo(memo)
-    }
-
-    fun deleteAll(){
-        memoDao.deleteAll()
+    fun deleteMemos(memos: List<Memo>){
+        memoDao.deleteMemos(memos)
     }
 
     suspend fun addFolder(folder: Folder){
@@ -49,10 +45,10 @@ class Repository(private val memoDao: MemoDao, private val folderDao: FolderDao)
         }
     }
 
-    suspend fun decrementMemoCount(folderId: Long) {
+    suspend fun decrementMemoCount(folderId: Long, memoCount: Int) {
         val folder = folderDao.getFolderById(folderId).firstOrNull()
         folder?.let {
-            it.memoCount--
+            it.memoCount -= memoCount
             folderDao.updateFolder(it)
         }
     }

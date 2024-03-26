@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.example.memoapp.data.Folder
 import com.example.memoapp.navigation.Navigation
 import com.example.memoapp.ui.theme.MemoAppTheme
 

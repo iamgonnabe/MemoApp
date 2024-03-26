@@ -12,26 +12,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material.Scaffold
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -42,8 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
@@ -62,6 +55,8 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
     viewModel.folderState = folder.value.title
     viewModel.memosInFolder = folder.value.memoCount
 
+    val allMemos = viewModel.getAllMemosByFolderId(folderId).collectAsState(initial = listOf())
+
     val bottomBar: @Composable ()-> Unit = {
         BottomAppBar(
             modifier = Modifier.wrapContentSize(),
@@ -75,20 +70,49 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                         .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
-                    Text(text = "")
-                    Text(text = if(viewModel.memosInFolder>0)"${viewModel.memosInFolder}개의 메모" else "메모 없음",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 48.dp, top = 16.dp))
-                    IconButton(onClick = {
-                        navController.navigate(Screen.MemoScreen.route + "/${folderId}/0L")
-                        viewModel.memoCreatingState = true
-                    }) {
-                        Icon(
-                            painterResource(id = R.drawable.outline_new_window_24),
-                            contentDescription = null,
-                            tint = colorResource(id = R.color.iconTextColor)
-                        )
+                    if(!viewModel.memoEditingState){
+                        Text(text = "")
+                        Text(text = if(viewModel.memosInFolder>0)"${viewModel.memosInFolder}개의 메모" else "메모 없음",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(start = 48.dp, top = 16.dp))
+                        IconButton(onClick = {
+                            navController.navigate(Screen.MemoScreen.route + "/${folderId}/0L")
+                            viewModel.memoCreatingState = true
+                        }) {
+                            Icon(
+                                painterResource(id = R.drawable.outline_new_window_24),
+                                contentDescription = null,
+                                tint = colorResource(id = R.color.iconTextColor)
+                            )
+                        }
+                    }else{
+                        if(!viewModel.memoSelectedListState.contains(true)){
+                            TextButton(onClick = { /*TODO*/ }) {
+                                Text(text = "모두 이동", fontSize = 16.sp, color = colorResource(id = R.color.iconTextColor))
+                            }
+                            TextButton(onClick = {
+                                viewModel.deleteMemos(allMemos.value)
+                                viewModel.memoEditingState = false
+                                viewModel.memosInFolder = 0
+                                viewModel.updateFolder(folder = Folder(id = folderId, title = viewModel.folderState, memoCount = 0))
+                            }) {
+                                Text(text = "모두 삭제", fontSize = 16.sp, color = colorResource(id = R.color.iconTextColor))
+                            }
+                        }else{
+                            val memoCount = viewModel.memoSelectedListState.count{ it }
+                            TextButton(onClick = { /*TODO*/ }) {
+                                Text(text = "이동", fontSize = 16.sp, color = colorResource(id = R.color.iconTextColor))
+                            }
+                            TextButton(onClick = {
+                                viewModel.deleteMemos(viewModel.deleteMemoList)
+                                viewModel.memoEditingState = false
+                                viewModel.memoSelectedListState.clear()
+                                viewModel.decrementMemoCount(folderId, memoCount)
+                            }) {
+                                Text(text = "삭제", fontSize = 16.sp, color = colorResource(id = R.color.iconTextColor))
+                            }
+                        }
                     }
                 }
             }
@@ -123,6 +147,9 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
 @Composable
 fun MemoItem(viewModel: MemoViewModel, memo: Memo, onClick: ()-> Unit){
     val title = memo.memo.split("\n").firstOrNull()
+    val isChecked = remember {
+        mutableStateOf(false)
+    }
     ElevatedCard(modifier = Modifier
         .fillMaxWidth()
         .height(64.dp)
@@ -131,10 +158,22 @@ fun MemoItem(viewModel: MemoViewModel, memo: Memo, onClick: ()-> Unit){
             onClick()
         }, elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.cardColor))) {
-        Row (modifier = Modifier.padding(start = 24.dp, top = 4.dp)){
+        Row (modifier = Modifier.padding(start = 20.dp, top = 4.dp)){
             if(viewModel.memoEditingState){
-                IconButton(onClick = { /*TODO*/ }) {
-                    //TODO
+                IconButton(onClick = {
+                    if(!isChecked.value){
+                        isChecked.value = true
+                        viewModel.memoSelectedListState.add(true)
+                        viewModel.deleteMemoList.add(memo)
+                    }else{
+                     isChecked.value = false
+                     viewModel.memoSelectedListState.remove(true)
+                        viewModel.deleteMemoList.remove(memo)
+                    }
+                }) {
+                    if(isChecked.value) Icon(painter = painterResource(id = R.drawable.baseline_check_circle_24), tint = colorResource(
+                        id = R.color.iconTextColor), contentDescription = null)
+                    else Icon(painter = painterResource(id = R.drawable.outline_circle_24), tint = Color.Gray, contentDescription = null)
                 }
             }
             Column {

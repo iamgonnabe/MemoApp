@@ -3,6 +3,7 @@ package com.example.memoapp
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -25,6 +26,8 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     var editFolderState by mutableStateOf(false)
     var memoCreatingState by mutableStateOf(false)
     var memoEditingState by mutableStateOf(false)
+    var memoSelectedListState = mutableStateListOf<Boolean>()
+    var deleteMemoList = mutableStateListOf<Memo>()
 
     fun onMemoChanged(newString: String){
         memoState = newString
@@ -67,15 +70,10 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
             repository.updateMemo(memo=memo)
         }
     }
-    fun deleteMemo(memo: Memo){
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteMemo(memo=memo)
-        }
-    }
 
-    fun deleteAllMemo(){
+    fun deleteMemos(memos: List<Memo>){
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteAll()
+            repository.deleteMemos(memos)
         }
     }
 
@@ -101,9 +99,9 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
         }
     }
 
-    fun decrementMemoCount(folderId: Long) {
+    fun decrementMemoCount(folderId: Long, memoCount: Int) {
         viewModelScope.launch {
-            repository.decrementMemoCount(folderId)
+            repository.decrementMemoCount(folderId, memoCount)
         }
     }
 

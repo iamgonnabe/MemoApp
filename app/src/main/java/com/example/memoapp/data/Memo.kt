@@ -3,7 +3,6 @@ package com.example.memoapp.data
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
 
 @Entity(tableName = "memo-table")
 data class Memo(

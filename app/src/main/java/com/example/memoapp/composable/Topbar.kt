@@ -4,10 +4,8 @@ import android.content.Context
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,25 +16,19 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -49,11 +41,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
-import com.example.memoapp.data.Folder
-import com.example.memoapp.data.Memo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.FlowCollector
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,7 +48,7 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
 
     val view = LocalView.current
     val context = LocalContext.current
-    val softwareKeyboardController = LocalSoftwareKeyboardController.current
+    //val softwareKeyboardController = LocalSoftwareKeyboardController.current
     val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     val dialogOpen = remember {
         mutableStateOf(false)
@@ -162,9 +149,11 @@ fun MenuPopUp(dialogOpen: MutableState<Boolean>, viewModel: MemoViewModel){
                     .height(80.dp)
                     .width(200.dp)
                     .padding(8.dp)
-                    .clickable {
+                    .clickable (
+                        enabled = viewModel.memosInFolder>0
+                    ){
                         dialogOpen.value = false
-                         viewModel.memoEditingState = true
+                        viewModel.memoEditingState = true
                     },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
@@ -184,3 +173,4 @@ fun MenuPopUp(dialogOpen: MutableState<Boolean>, viewModel: MemoViewModel){
         }
     }
 }
+
