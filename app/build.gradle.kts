@@ -56,6 +56,7 @@ dependencies {
     //noinspection KaptUsageInsteadOfKsp
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+    implementation (libs.coil.compose)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.ui)
