@@ -3,6 +3,7 @@ package com.example.memoapp
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,18 +21,18 @@ import java.util.Locale
 
 class MemoViewModel(private val repository: Repository = Graph.repository): ViewModel() {
     var memoState by mutableStateOf("")
-    var memoTimeState by mutableStateOf(Date())
     var folderState by mutableStateOf("")
     var memosInFolder by mutableIntStateOf(0)
     var editFolderState by mutableStateOf(false)
-    var memoCreatingState by mutableStateOf(false)
-    var memoEditingState by mutableStateOf(false)
+    var isNewMemo by mutableStateOf(false)
+    var isMemoUpdating by mutableStateOf(false)
+    var isMemoEditing by mutableStateOf(false)
     var memoSelectedListState = mutableStateListOf<Boolean>()
     var deleteMemoList = mutableStateListOf<Memo>()
+    var memoIdState by mutableLongStateOf(0L)
 
     fun onMemoChanged(newString: String){
         memoState = newString
-        memoTimeState = Date()
     }
 
     fun onFolderChanged(newString: String){
@@ -66,8 +67,11 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     }
 
     fun updateMemo(memo: Memo){
+        val currentDate = Date()
+        val dateFormat = SimpleDateFormat("yyyy.MM.dd. HH:mm", Locale.KOREAN)
+        val dateString = dateFormat.format(currentDate)
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateMemo(memo=memo)
+            repository.updateMemo(memo=Memo(id = memo.id, memo=memo.memo, time = dateString, folderId = memo.folderId))
         }
     }
 

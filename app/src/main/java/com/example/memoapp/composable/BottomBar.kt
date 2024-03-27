@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,7 +45,7 @@ import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
 
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+
 @Composable
 fun BottomBar(viewModel: MemoViewModel) {
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -61,7 +62,7 @@ fun BottomBar(viewModel: MemoViewModel) {
     ) { permissions ->
         if (permissions[READ_EXTERNAL_STORAGE] == true ||
             permissions[READ_MEDIA_VISUAL_USER_SELECTED] == true) {
-            // Gallery picker
+            launcher.launch("image/*")
         } else {
             val rationaleRequired = ActivityCompat.shouldShowRequestPermissionRationale(
                 context as MainActivity,
@@ -99,7 +100,7 @@ fun BottomBar(viewModel: MemoViewModel) {
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = { launcher.launch("image/*") }) {
+                IconButton(onClick = { }) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_checklist_24),
                         tint = colorResource(id = R.color.iconTextColor),
@@ -107,9 +108,11 @@ fun BottomBar(viewModel: MemoViewModel) {
                     )
                 }
                 IconButton(onClick = {
-                    if (hasLocationPermission(context)) {
-                        //TODO
+                    if (hasGalleryPermission(context)) {
+                        Log.d("camera button","true")
+                        launcher.launch("image/*")
                     } else {
+                        Log.d("camera button", "false")
                         requestPermissionLauncher.launch(
                             arrayOf(
                                 READ_MEDIA_VISUAL_USER_SELECTED,
@@ -157,8 +160,8 @@ fun LoadImageFromUri(uri: Uri) {
 }
 
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-fun hasLocationPermission(context: Context): Boolean {
+
+fun hasGalleryPermission(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         ContextCompat.checkSelfPermission(
             context,

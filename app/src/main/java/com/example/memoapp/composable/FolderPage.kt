@@ -70,7 +70,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                         .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
-                    if(!viewModel.memoEditingState){
+                    if(!viewModel.isMemoEditing){
                         Text(text = "")
                         Text(text = if(viewModel.memosInFolder>0)"${viewModel.memosInFolder}개의 메모" else "메모 없음",
                             color = Color.White,
@@ -78,7 +78,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                             modifier = Modifier.padding(start = 48.dp, top = 16.dp))
                         IconButton(onClick = {
                             navController.navigate(Screen.MemoScreen.route + "/${folderId}/0L")
-                            viewModel.memoCreatingState = true
+                            viewModel.isNewMemo = true
                         }) {
                             Icon(
                                 painterResource(id = R.drawable.outline_new_window_24),
@@ -93,7 +93,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                             }
                             TextButton(onClick = {
                                 viewModel.deleteMemos(allMemos.value)
-                                viewModel.memoEditingState = false
+                                viewModel.isMemoEditing = false
                                 viewModel.memosInFolder = 0
                                 viewModel.updateFolder(folder = Folder(id = folderId, title = viewModel.folderState, memoCount = 0))
                             }) {
@@ -106,7 +106,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                             }
                             TextButton(onClick = {
                                 viewModel.deleteMemos(viewModel.deleteMemoList)
-                                viewModel.memoEditingState = false
+                                viewModel.isMemoEditing = false
                                 viewModel.memoSelectedListState.clear()
                                 viewModel.decrementMemoCount(folderId, memoCount)
                             }) {
@@ -156,10 +156,11 @@ fun MemoItem(viewModel: MemoViewModel, memo: Memo, onClick: ()-> Unit){
         .padding(horizontal = 16.dp)
         .clickable {
             onClick()
+            viewModel.isNewMemo = false
         }, elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.cardColor))) {
         Row (modifier = Modifier.padding(start = 20.dp, top = 4.dp)){
-            if(viewModel.memoEditingState){
+            if(viewModel.isMemoEditing){
                 IconButton(onClick = {
                     if(!isChecked.value){
                         isChecked.value = true

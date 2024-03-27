@@ -120,7 +120,7 @@ fun MainPage(navController: NavController, viewModel: MemoViewModel){
                         )
                     }
                     IconButton(onClick = {
-                        viewModel.memoCreatingState = true
+                        viewModel.isNewMemo = true
                         navController.navigate(Screen.MemoScreen.route + "/1L/0L")
                         viewModel.editFolderState = false
                     }) {

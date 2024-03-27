@@ -41,6 +41,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
+import com.example.memoapp.data.Memo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,11 +100,19 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
                 IconButton(onClick = { /* edit memo drawer*/ }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
                 }
-                if(viewModel.memoState.isNotEmpty() && viewModel.memoCreatingState){
+                if(viewModel.isNewMemo && viewModel.isMemoUpdating){
                     TextButton(onClick = {
                         viewModel.addMemo(memo = viewModel.memoState, folderId = folderId)
                         viewModel.incrementMemoCount(folderId = folderId)
-                        viewModel.memoCreatingState = false
+                        viewModel.isMemoUpdating = false
+                        imm.hideSoftInputFromWindow(view.windowToken, 0)
+                    }) {
+                        Text(text = "완료", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
+                    }
+                } else if(!viewModel.isNewMemo && viewModel.isMemoUpdating) {
+                    TextButton(onClick = {
+                        viewModel.updateMemo(Memo(id = viewModel.memoIdState, memo = viewModel.memoState, folderId = folderId))
+                        viewModel.isMemoUpdating = false
                         imm.hideSoftInputFromWindow(view.windowToken, 0)
                     }) {
                         Text(text = "완료", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
@@ -153,7 +162,7 @@ fun MenuPopUp(dialogOpen: MutableState<Boolean>, viewModel: MemoViewModel){
                         enabled = viewModel.memosInFolder>0
                     ){
                         dialogOpen.value = false
-                        viewModel.memoEditingState = true
+                        viewModel.isMemoEditing = true
                     },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
