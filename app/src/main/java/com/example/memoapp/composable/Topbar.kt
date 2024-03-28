@@ -4,8 +4,11 @@ import android.content.Context
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,6 +19,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,8 +29,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -109,7 +116,8 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
                     }) {
                         Text(text = "완료", fontSize = 18.sp, color = colorResource(id = R.color.iconTextColor))
                     }
-                } else if(!viewModel.isNewMemo && viewModel.isMemoUpdating) {
+                } else if(!viewModel.isNewMemo && viewModel.isMemoUpdating
+                    ) {
                     TextButton(onClick = {
                         viewModel.updateMemo(Memo(id = viewModel.memoIdState, memo = viewModel.memoState, folderId = folderId))
                         viewModel.isMemoUpdating = false
@@ -140,7 +148,7 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
         navigationIcon = navigationIcon,
         actions = actionTextButton,
     )
-    MenuPopUp(dialogOpen, viewModel)
+    MultipleMenuPopup(dialogOpen = dialogOpen)
 }
 
 @Composable
@@ -158,9 +166,9 @@ fun MenuPopUp(dialogOpen: MutableState<Boolean>, viewModel: MemoViewModel){
                     .height(80.dp)
                     .width(200.dp)
                     .padding(8.dp)
-                    .clickable (
-                        enabled = viewModel.memosInFolder>0
-                    ){
+                    .clickable(
+                        enabled = viewModel.memosInFolder > 0
+                    ) {
                         dialogOpen.value = false
                         viewModel.isMemoEditing = true
                     },
@@ -169,17 +177,68 @@ fun MenuPopUp(dialogOpen: MutableState<Boolean>, viewModel: MemoViewModel){
                     containerColor = colorResource(id = R.color.cardColor)
                 )
             ) {
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    Text(text = "메모 선택", color = Color.White)
-                    Icon(painter = painterResource(id = R.drawable.baseline_check_circle_outline_24), tint = Color.White, contentDescription = null)
+                Column {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ){
+                        Text(text = "메모 선택", color = Color.White)
+                        Icon(painter = painterResource(id = R.drawable.baseline_check_circle_outline_24), tint = Color.White, contentDescription = null)
+                    }
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ){
+                        Text(text = "이름 변경", color = Color.White)
+                        Icon(painter = painterResource(id = R.drawable.baseline_mode_edit_outline_24), tint = Color.White, contentDescription = null)
+                    }
                 }
             }
         }
     }
 }
+
+@Composable
+fun PopupMenu(
+    dialogOpen: MutableState<Boolean>,
+    items: List<String>,
+    onItemSelected: (String) -> Unit
+) {
+    Box {
+        DropdownMenu(
+            expanded = dialogOpen.value,
+            onDismissRequest = { dialogOpen.value = false }
+        ) {
+            items.forEach { item ->
+                DropdownMenuItem(onClick = {
+                    onItemSelected(item)
+                    dialogOpen.value = false
+                }, text = { Text(text = item)})
+            }
+        }
+    }
+}
+
+@Composable
+fun MultipleMenuPopup(dialogOpen: MutableState<Boolean>) {
+    var selectedMenu by remember { mutableStateOf("") }
+
+    Column {
+        PopupMenu(
+            dialogOpen = dialogOpen,
+            items = listOf("메모 선택", "이름 변경"),
+            onItemSelected = { item ->
+                selectedMenu = item
+            }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Selected Menu: $selectedMenu")
+    }
+}
+
+
 
