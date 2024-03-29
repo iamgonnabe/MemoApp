@@ -30,6 +30,7 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
     var memoSelectedListState = mutableStateListOf<Boolean>()
     var deleteMemoList = mutableStateListOf<Memo>()
     var memoIdState by mutableLongStateOf(0L)
+    var changeFolderNameDialogOpenState by mutableStateOf(false)
 
     fun onMemoChanged(newString: String){
         memoState = newString

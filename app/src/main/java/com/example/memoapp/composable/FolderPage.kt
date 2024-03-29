@@ -9,17 +9,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material.Scaffold
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,16 +32,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
@@ -54,6 +64,10 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
     val folder = viewModel.getFolderById(folderId).collectAsState(initial = Folder(0L,"",0))
     viewModel.folderState = folder.value.title
     viewModel.memosInFolder = folder.value.memoCount
+    var folderTitle by remember {
+        mutableStateOf("")
+    }
+    folderTitle = folder.value.title
 
     val allMemos = viewModel.getAllMemosByFolderId(folderId).collectAsState(initial = listOf())
 
@@ -120,7 +134,10 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
     }
     
     Scaffold (
-        topBar = {TopBar(title = viewModel.folderState, isFolder = isFolder, folderId = folderId, viewModel = viewModel ){navController.navigateUp()} },
+        topBar = {TopBar(title = folderTitle, isFolder = isFolder, folderId = folderId, viewModel = viewModel){
+            navController.navigateUp()
+            viewModel.isMemoEditing = false
+        } },
         bottomBar = bottomBar,
         backgroundColor = Color.Black,
         scaffoldState = scaffoldState
@@ -141,6 +158,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                 }
             }
         }
+        ChangeFolderNameDialog(viewModel=viewModel, folderId = folderId)
     }
 }
 
@@ -186,6 +204,77 @@ fun MemoItem(viewModel: MemoViewModel, memo: Memo, onClick: ()-> Unit){
                     Text(text = memo.memo.split("\n").getOrNull(1) ?: "추가 텍스트 없음", color = colorResource(
                         id = R.color.memoTextColor), overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 18.sp
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChangeFolderNameDialog(viewModel: MemoViewModel, folderId: Long){
+    if(viewModel.changeFolderNameDialogOpenState){
+        Dialog(onDismissRequest = { viewModel.changeFolderNameDialogOpenState = false },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            Card(
+                modifier = Modifier
+                    .height(160.dp)
+                    .width(280.dp)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = colorResource(id = R.color.cardColor)
+                )
+            ) {
+                Column (
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Text(text = "폴더 이름 변경", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 10.dp))
+                    OutlinedTextField(
+                        value = viewModel.folderState,
+                        onValueChange = {viewModel.onFolderChanged(it)},
+                        placeholder = { Text(text = "이름", color = Color.White)},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(28.dp)
+                            .padding(horizontal = 8.dp),
+                        singleLine = true,
+                        textStyle = TextStyle.Default.copy(fontSize = 4.sp),
+                        shape = RoundedCornerShape(12.dp),
+                        trailingIcon = {IconButton(onClick = { viewModel.folderState = "" }) {
+                            Icon(painter = painterResource(id = R.drawable.baseline_clear_24), contentDescription = null, tint = Color.Gray)
+                        }},
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorResource(id = R.color.bgColor),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            unfocusedContainerColor = colorResource(id = R.color.bgColor),
+                            cursorColor = colorResource(id = R.color.iconTextColor),
+                            focusedBorderColor = Color.Gray)
+                    )
+                    Row (modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceEvenly){
+                        TextButton(onClick = { viewModel.changeFolderNameDialogOpenState = false } ) {
+                            Text(text = "취소", fontSize = 18.sp, color= colorResource(id = R.color.iconTextColor))
+                        }
+                        TextButton(
+                            enabled = viewModel.folderState.isNotEmpty(),
+                            onClick = {
+                                viewModel.changeFolderNameDialogOpenState = false
+                            viewModel.updateFolder(Folder(id = folderId, title = viewModel.folderState, memoCount = viewModel.memosInFolder ))
+                        } ) {
+                            Text(text = "저장",
+                                fontSize = 18.sp,
+                                color= if(viewModel.folderState.isNotEmpty()) colorResource(id = R.color.iconTextColor) else Color.DarkGray)
+                        }
+                    }
                 }
             }
         }

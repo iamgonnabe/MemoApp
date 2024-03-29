@@ -16,12 +16,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -48,6 +51,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,6 +67,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -89,6 +94,9 @@ fun MainPage(navController: NavController, viewModel: MemoViewModel){
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    val folder by remember {
+        mutableStateOf("폴더")
+    }
 
     val roundedCornerRadius = if(isSheetFullScreen) 0.dp else 36.dp
     val bottomBar: @Composable ()-> Unit = {
@@ -142,7 +150,7 @@ fun MainPage(navController: NavController, viewModel: MemoViewModel){
         Scaffold(
             scaffoldState = scaffoldState,
             backgroundColor = Color.Black,
-            topBar = {TopBar(title = "폴더", isFolder = false, folderId = 0L, viewModel = viewModel)},
+            topBar = {TopBar(title = folder, isFolder = false, folderId = 0L, viewModel = viewModel)},
             bottomBar = bottomBar
         ) {
             val folderList = viewModel.getAllFolders.collectAsState(initial = listOf())
@@ -165,6 +173,7 @@ fun MainPage(navController: NavController, viewModel: MemoViewModel){
                                 navController.navigate(Screen.FolderScreen.route + "/${folder.id}")
                             }
                         }
+                        ChangeFolderNameDialog(viewModel = viewModel, folderId = folder.id)
                     }
                 }
             }
@@ -266,13 +275,19 @@ fun NewFolderTextField(
 
 @Composable
 fun FolderItem(folder: Folder, viewModel:MemoViewModel, onClick: () -> Unit){
+    val expanded = remember {
+        mutableStateOf(false)
+    }
+    val items = listOf(
+        "이름 변경" to painterResource(id = R.drawable.baseline_mode_edit_outline_24),
+        "삭제" to painterResource(id = R.drawable.outline_delete_24)
+    )
     ElevatedCard(modifier = Modifier
         .fillMaxWidth()
         .height(48.dp)
         .padding(horizontal = 4.dp)
         .clickable {
             onClick()
-            Log.d("folderId", "${folder.id}")
         }, elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.cardColor))) {
         Row (modifier = Modifier
@@ -280,20 +295,75 @@ fun FolderItem(folder: Folder, viewModel:MemoViewModel, onClick: () -> Unit){
             .padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween){
             Row (verticalAlignment = Alignment.CenterVertically){
                 Icon(painterResource(id = R.drawable.outline_folder_open_24),
-                    tint = colorResource(id = R.color.iconTextColor),
+                    tint = if(folder.id == 1L && viewModel.editFolderState) Color.DarkGray else colorResource(id = R.color.iconTextColor),
                     modifier = Modifier.size(26.dp),
                     contentDescription = null)
                 Box(modifier = Modifier.size(10.dp))
-                Text(text = folder.title, fontSize = 22.sp, color = Color.White, fontWeight = FontWeight.Medium)
+                Text(
+                    modifier = Modifier.width(280.dp),
+                    text = folder.title,
+                    fontSize = 22.sp,
+                    color = if(folder.id == 1L && viewModel.editFolderState) Color.DarkGray else Color.White,
+                    fontWeight = FontWeight.Medium,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
             }
-            if(viewModel.editFolderState /* && !folder.title.contains("메모")*/){
+            if(viewModel.editFolderState && folder.id != 1L){
                 IconButton(onClick = {
-                    viewModel.deleteFolder(folder)
+                    expanded.value = true
                 }) {
                     Icon(
                         painterResource(id = R.drawable.baseline_menu_24),
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = colorResource(id = R.color.iconTextColor)
                     )
+                }
+                DropdownMenu(
+                    modifier = Modifier
+                        .width(240.dp)
+                        .background(color = colorResource(id = R.color.cardColor)),
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false }
+                ) {
+                    items.forEachIndexed { index, (item, icon) ->
+                        DropdownMenuItem(
+                            onClick = {
+                                expanded.value = false
+                                if (index == 0) {
+                                    viewModel.changeFolderNameDialogOpenState = true
+                                } else {
+                                    viewModel.deleteFolder(folder = folder)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = item,
+                                    color = if(index==0) Color.White else Color.Red,
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                                Icon(
+                                    painter = icon,
+                                    contentDescription = null,
+                                    tint = if(index==0) Color.White else Color.Red
+                                )
+                            }
+                        }
+                        if (index < items.size - 1) {
+                            androidx.compose.material.Divider(
+                                color = Color.Gray,
+                                thickness = 1.dp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
             }else{
                 Row (verticalAlignment = Alignment.CenterVertically){
