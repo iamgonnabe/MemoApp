@@ -59,6 +59,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
     val isFolder by remember {
         mutableStateOf(true)
     }
+
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
     val scaffoldState = rememberScaffoldState()
     val folder = viewModel.getFolderById(folderId).collectAsState(initial = Folder(0L,"",0))
@@ -106,7 +107,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                                 Text(text = "모두 이동", fontSize = 16.sp, color = colorResource(id = R.color.iconTextColor))
                             }
                             TextButton(onClick = {
-                                viewModel.deleteMemos(allMemos.value)
+                                viewModel.deleteSelectedMemos(allMemos.value)
                                 viewModel.isMemoEditing = false
                                 viewModel.memosInFolder = 0
                                 viewModel.updateFolder(folder = Folder(id = folderId, title = viewModel.folderState, memoCount = 0))
@@ -119,7 +120,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
                                 Text(text = "이동", fontSize = 16.sp, color = colorResource(id = R.color.iconTextColor))
                             }
                             TextButton(onClick = {
-                                viewModel.deleteMemos(viewModel.deleteMemoList)
+                                viewModel.deleteSelectedMemos(viewModel.deleteMemoList)
                                 viewModel.isMemoEditing = false
                                 viewModel.memoSelectedListState.clear()
                                 viewModel.decrementMemoCount(folderId, memoCount)
@@ -137,6 +138,7 @@ fun FolderPage(folderId: Long, viewModel: MemoViewModel, navController: NavContr
         topBar = {TopBar(title = folderTitle, isFolder = isFolder, folderId = folderId, viewModel = viewModel){
             navController.navigateUp()
             viewModel.isMemoEditing = false
+            viewModel.folderState = ""
         } },
         bottomBar = bottomBar,
         backgroundColor = Color.Black,
@@ -245,7 +247,7 @@ fun ChangeFolderNameDialog(viewModel: MemoViewModel, folderId: Long){
                             .height(28.dp)
                             .padding(horizontal = 8.dp),
                         singleLine = true,
-                        textStyle = TextStyle.Default.copy(fontSize = 4.sp),
+                        textStyle = TextStyle.Default.copy(fontSize = 4.sp, color = Color.White),
                         shape = RoundedCornerShape(12.dp),
                         trailingIcon = {IconButton(onClick = { viewModel.folderState = "" }) {
                             Icon(painter = painterResource(id = R.drawable.baseline_clear_24), contentDescription = null, tint = Color.Gray)

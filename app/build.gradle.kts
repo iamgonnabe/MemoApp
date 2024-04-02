@@ -57,6 +57,7 @@ dependencies {
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation (libs.coil.compose)
+    implementation(libs.gson)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.ui)

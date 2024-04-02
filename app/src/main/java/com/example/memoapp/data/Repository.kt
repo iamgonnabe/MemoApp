@@ -17,8 +17,11 @@ class Repository(private val memoDao: MemoDao, private val folderDao: FolderDao)
         memoDao.updateMemo(memo)
     }
 
-    fun deleteMemos(memos: List<Memo>){
-        memoDao.deleteMemos(memos)
+    fun deleteSelectedMemos(memos: List<Memo>){
+        memoDao.deleteSelectedMemos(memos)
+    }
+    fun deleteMemo(memo: Memo){
+        memoDao.deleteMemo(memo)
     }
 
     suspend fun addFolder(folder: Folder){

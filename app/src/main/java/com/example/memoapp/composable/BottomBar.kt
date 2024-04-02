@@ -2,9 +2,7 @@ package com.example.memoapp.composable
 
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
-import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -13,13 +11,11 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
@@ -38,12 +34,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
 import com.example.memoapp.MainActivity
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
-
 
 
 @Composable
@@ -141,21 +134,8 @@ fun BottomBar(viewModel: MemoViewModel) {
                         contentDescription = null
                     )
                 }
-                selectedImageUri?.let { uri ->
-                    LoadImageFromUri(uri = uri)
-                }
             }
         }
-    )
-}
-@OptIn(ExperimentalCoilApi::class)
-@Composable
-fun LoadImageFromUri(uri: Uri) {
-    val painter = rememberImagePainter(uri)
-    Image(
-        painter = painter,
-        contentDescription = null,
-        modifier = Modifier.size(200.dp),
     )
 }
 

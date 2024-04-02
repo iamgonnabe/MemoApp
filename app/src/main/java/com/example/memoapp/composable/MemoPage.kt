@@ -1,20 +1,24 @@
 package com.example.memoapp.composable
 
 import android.annotation.SuppressLint
+import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
 import com.example.memoapp.data.Memo
@@ -30,6 +34,7 @@ fun MemoPage(folderId: Long, memoId: Long, viewModel: MemoViewModel, navControll
         viewModel.memoIdState = memo.value.id
     } else {
         viewModel.memoState = ""
+        viewModel.memoIdState = 0L
     }
     val scaffoldState = rememberScaffoldState()
 
@@ -65,4 +70,15 @@ fun MemoPage(folderId: Long, memoId: Long, viewModel: MemoViewModel, navControll
         }
     }
 
+}
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun LoadImageFromUri(uri: Uri) {
+    val painter = rememberImagePainter(uri)
+    Image(
+        painter = painter,
+        contentDescription = null,
+        modifier = Modifier.size(200.dp),
+    )
 }

@@ -49,7 +49,7 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
         }
     }
 
-    fun addMemo(memo: String, folderId : Long){
+    fun addMemo(memo: String, folderId: Long){
         val currentDate = Date()
         val dateFormat = SimpleDateFormat("yyyy.MM.dd. HH:mm", Locale.KOREAN)
         val dateString = dateFormat.format(currentDate)
@@ -76,9 +76,15 @@ class MemoViewModel(private val repository: Repository = Graph.repository): View
         }
     }
 
-    fun deleteMemos(memos: List<Memo>){
+    fun deleteSelectedMemos(memos: List<Memo>){
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteMemos(memos)
+            repository.deleteSelectedMemos(memos)
+        }
+    }
+
+    fun deleteMemo(memo: Memo){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteMemo(memo)
         }
     }
 

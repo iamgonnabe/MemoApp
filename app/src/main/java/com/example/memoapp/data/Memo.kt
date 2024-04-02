@@ -1,6 +1,8 @@
 package com.example.memoapp.data
 
+import android.net.Uri
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -13,7 +15,7 @@ data class Memo(
     @ColumnInfo(name = "memo-time")
     val time: String="",
     @ColumnInfo(name = "folder")
-    val folderId: Long = 0L
+    val folderId: Long = 0L,
 )
 
 @Entity(tableName = "folder")

@@ -27,7 +27,10 @@ abstract class MemoDao {
     abstract fun getMemoById(id: Long): Flow<Memo>
 
     @Delete
-    abstract fun deleteMemos(memoEntities: List<Memo>)
+    abstract fun deleteSelectedMemos(memoEntities: List<Memo>)
+
+    @Delete
+    abstract fun deleteMemo(memoEntity: Memo)
 
 }
 

@@ -68,6 +68,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -76,6 +77,7 @@ import androidx.navigation.NavController
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
 import com.example.memoapp.data.Folder
+import com.example.memoapp.data.Memo
 import com.example.memoapp.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -173,8 +175,8 @@ fun MainPage(navController: NavController, viewModel: MemoViewModel){
                                 navController.navigate(Screen.FolderScreen.route + "/${folder.id}")
                             }
                         }
-                        ChangeFolderNameDialog(viewModel = viewModel, folderId = folder.id)
                     }
+
                 }
             }
 
@@ -324,7 +326,8 @@ fun FolderItem(folder: Folder, viewModel:MemoViewModel, onClick: () -> Unit){
                         .width(240.dp)
                         .background(color = colorResource(id = R.color.cardColor)),
                     expanded = expanded.value,
-                    onDismissRequest = { expanded.value = false }
+                    onDismissRequest = { expanded.value = false },
+                    offset = DpOffset(140.dp,0.dp)
                 ) {
                     items.forEachIndexed { index, (item, icon) ->
                         DropdownMenuItem(
@@ -365,6 +368,7 @@ fun FolderItem(folder: Folder, viewModel:MemoViewModel, onClick: () -> Unit){
                         }
                     }
                 }
+                ChangeFolderNameDialog(viewModel = viewModel, folderId = folder.id)
             }else{
                 Row (verticalAlignment = Alignment.CenterVertically){
                     Text(text = folder.memoCount.toString(), fontSize = 22.sp, color = Color.Gray)

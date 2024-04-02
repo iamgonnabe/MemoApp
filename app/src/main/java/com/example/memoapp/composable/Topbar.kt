@@ -1,6 +1,8 @@
 package com.example.memoapp.composable
 
 import android.content.Context
+import android.content.Intent
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,12 +11,14 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import com.example.memoapp.MemoViewModel
 import com.example.memoapp.R
 import com.example.memoapp.data.Memo
@@ -52,9 +58,12 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
     val expanded = remember {
         mutableStateOf(false)
     }
-    val items = listOf(
+    val itemsInFolderDropDownMenu = listOf(
         "메모 선택" to painterResource(id = R.drawable.baseline_check_circle_outline_24),
         "이름 변경" to painterResource(id = R.drawable.baseline_mode_edit_outline_24)
+    )
+    val itemsInMemoDropDownMenu = listOf(
+        "삭제" to painterResource(id = R.drawable.outline_delete_24)
     )
     val enabled = remember {
         mutableStateListOf(false, true)
@@ -71,7 +80,7 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
             }
         }else {
             {
-                IconButton(onClick = {}) {
+                IconButton(onClick = {}, enabled = false) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         tint = Color.Transparent,
@@ -111,7 +120,7 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
                     expanded = expanded.value,
                     onDismissRequest = { expanded.value = false }
                 ) {
-                    items.forEachIndexed { index, (item, icon) ->
+                    itemsInFolderDropDownMenu.forEachIndexed { index, (item, icon) ->
                         DropdownMenuItem(
                             enabled = enabled[index],
                             onClick = {
@@ -142,7 +151,7 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
                                 )
                             }
                         }
-                        if (index < items.size - 1) {
+                        if (index < itemsInFolderDropDownMenu.size - 1) {
                             Divider(
                                 color = Color.Gray,
                                 thickness = 1.dp,
@@ -154,11 +163,51 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
             }
         }else{
             {
-                IconButton(onClick = { /* share */ }, enabled = viewModel.memoState.isNotEmpty()) {
-                    Icon(painterResource(id = R.drawable.baseline_ios_share_24), contentDescription = null)
-                }
-                IconButton(onClick = { /* edit memo drawer*/ }) {
+                Share(text = viewModel.memoState, context = LocalContext.current, viewModel = viewModel)
+                IconButton(onClick = { expanded.value = true }) {
                     Icon(painterResource(id = R.drawable.baseline_menu_24), contentDescription = null)
+                }
+                DropdownMenu(
+                    modifier = Modifier
+                        .width(240.dp)
+                        .background(color = colorResource(id = R.color.cardColor)),
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false }
+                ) {
+                    itemsInMemoDropDownMenu.forEachIndexed { index, (item, icon) ->
+                        DropdownMenuItem(
+                            enabled = !viewModel.isMemoUpdating,
+                            onClick = {
+                                //TODO
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = item,
+                                    color = if(index==0) Color.Red else Color.White,
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                                Icon(
+                                    painter = icon,
+                                    contentDescription = null,
+                                    tint = if(index==0) Color.Red else Color.White,
+                                )
+                            }
+                        }
+                        if (index < itemsInMemoDropDownMenu.size - 1) {
+                            Divider(
+                                color = Color.Gray,
+                                thickness = 1.dp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
                 if(viewModel.isNewMemo && viewModel.isMemoUpdating){
                     TextButton(onClick = {
@@ -202,3 +251,18 @@ fun TopBar(title: String, isFolder: Boolean, folderId: Long,  viewModel: MemoVie
         actions = actionTextButton,
     )
 }
+
+@Composable
+fun Share(text: String, context: Context, viewModel: MemoViewModel) {
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        putExtra(Intent.EXTRA_TEXT, text)
+        type = "text/plain"
+    }
+    val shareIntent = Intent.createChooser(sendIntent, null)
+    IconButton(onClick = {
+        startActivity(context, shareIntent, null)
+    }, enabled = viewModel.memoState.isNotEmpty()) {
+        Icon(painter = painterResource(id = R.drawable.baseline_ios_share_24), contentDescription = null)
+    }
+}
+
